@@ -14,10 +14,11 @@ kf_FeChr = 1.7e9
 kf_FeOxA = 7.1e9
 kd_EDTA  = 3.6e-3 # [1/hr]
 kd_EntB  = 5.7e-2
-kd_FeChr = 1.8e-4              # value from Witter et al., 2000
+kd_FeChr_Witter = 1.8e-4       # value from Witter et al., 2000
 kd_FeChr_Boiteau = 3.6e-4      # value from Boiteau et al. 2022
-kd_FeOxA = 5.4e-3              # value from Witter et al., 2000
+kd_FeOxA_Witter = 5.4e-3       # value from Witter et al., 2000
 kd_FeOxA_Boiteau = 1.3e-4      # value from Boiteau et al. 2022
+kdeg_Ent = 1.0/(3.0 * 24) # [1/hr]
 FeEDTA0  = 100.0e-9
 EntB0 = 50.0e-9
 
@@ -28,6 +29,10 @@ EntB0 = 50.0e-9
 # first model, assuming FeEDTA concentration is unchanged, so we solve
 # only for the concentrations of Fe' and Fe bound to the added
 # ligand. 'free' ligand is calculated from mass balance
+#
+# This model is retired for now, it is a good approximation in the beginning of
+# the experiment, but the decrease of FeEDTA with time becomes non-negligible
+# after say 4-5 days
 def modelEntB(t, Y):
     Feprime    = Y[0]
     Fe_ligand  = Y[1]
@@ -55,6 +60,20 @@ def model2EntB(t, Y):
     dYdt = [dFeprimedt, dFeliganddt, dFeEDTAdt]
     return dYdt
 
+# third model, taking into additionally that the added ligand may be unstable with
+# the apo form being degraded with a constant rate 
+def model3EntB(t, Y):
+    Feprime    = Y[0]
+    Fe_ligand  = Y[1]
+    FeEDTA     = Y[2]
+    Lig_free   = Y[3]
+    dFeprimedt  = kd_EDTA * FeEDTA - kf_lig * Feprime * Lig_free + kd_lig * Fe_ligand
+    dFeliganddt = kf_lig * Feprime * Lig_free - kd_lig * Fe_ligand
+    dFeEDTAdt   = -kd_EDTA * FeEDTA
+    dLigfreedt = kd_lig * Fe_ligand - kf_lig * Feprime * Lig_free - kdeg_lig * Lig_free
+    dYdt = [dFeprimedt, dFeliganddt, dFeEDTAdt, dLigfreedt]
+    return dYdt
+
 #---------------------------------------------------------------
 # numerical solution of the model equations over 240 hours (10 days)
 #---------------------------------------------------------------
@@ -77,11 +96,11 @@ Which ligand is added? (Enter an integer number between 1 and 5)
     elif (answer == 2):
         Lig_type = "Ferrichrome (Witter)"
         kf_lig = kf_FeChr
-        kd_lig = kd_FeChr
+        kd_lig = kd_FeChr_Witter
     elif (answer == 3):
         Lig_type = "Desferrioxamine B (Witter)"
         kf_lig = kf_FeOxA
-        kd_lig = kd_FeOxA
+        kd_lig = kd_FeOxA_Witter
     elif (answer == 4):
         Lig_type = "Ferrichrome (Boiteau)"
         kf_lig = kf_FeChr
@@ -93,12 +112,22 @@ Which ligand is added? (Enter an integer number between 1 and 5)
     else:
         print("did not recognise input")
     print("Using formation and dissociation constants for " + Lig_type)
-    
+
+    # do we want to include apo-enterobactin degradation in the solution 
+    if (Lig_type=="Enterobactin"):
+        question = """
+Do we include degradation of apo-enterobactin in the calculation?
+(1 = yes, 0 = no)
+"""
+        answer_decay = int(input(question))
+        if (answer_decay == 1):
+            kdeg_lig = kdeg_Ent
+        
     # how much ligand are we adding?
     
     question = """
 How much of the competing ligand is added?
-(enter the concentration in nmol/L)
+(enter the concentration in nmol/L) 
 """
     
     answer = float(input(question))
@@ -110,21 +139,26 @@ How much of the competing ligand is added?
     teval = np.concatenate( (np.arange(tspan[0], 2, 0.02), np.arange(2.0, tspan[1]+1, 1.0)) )
     
     # initial condition: Fe' and Fe bound to new ligand = 0
-    InitCon = [0.0, 0.0]
-    sol = solve_ivp(modelEntB, tspan, InitCon, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+    # InitCon = [0.0, 0.0]
+    # sol = solve_ivp(modelEntB, tspan, InitCon, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
     
     # initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
     InitCon2 = [0.0, 0.0, FeEDTA0]
     sol2 = solve_ivp(model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+
+    if (answer_decay == 1):
+        # initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM, Lig_free = added ligand
+        InitCon3 = [0.0, 0.0, FeEDTA0, Lig_added]
+        sol3 = solve_ivp(model3EntB, tspan, InitCon3, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
     
     #---------------------------------------------------------------
     # make a plot
     #---------------------------------------------------------------
     fig,ax = plt.subplots()
-    ax.semilogy(sol.t, sol.y[0], label="Fe' (2 eqns)")
-    ax.semilogy(sol.t, sol.y[1], label='FeEntB')
-    ax.semilogy(sol2.t, sol2.y[0], '--', label="Fe' (3 eqns)")
-    ax.semilogy(sol2.t, sol2.y[1], '--', label='FeEntB')
+    ax.semilogy(sol2.t, sol2.y[0], '-', label="Fe' (3 eqns, no ligand decay)")
+    ax.semilogy(sol2.t, sol2.y[1], '-', label='FeEntB')
+    ax.semilogy(sol3.t, sol3.y[0], '--', label="Fe' (4 eqns, ligand decauy)")
+    ax.semilogy(sol3.t, sol3.y[1], '--', label='FeEntB')
     ax.legend()
     ax.set_xlabel("t [hr]")
     ax.set_ylabel("Fe species [M]")
