@@ -6,103 +6,53 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #---------------------------------------------------------------
-# formation and dissociation rates for different model ligands
+# this is where the basic rate constants and model equations are defined
 #---------------------------------------------------------------
-kf_EDTA  = 7.2e4  # [1/(M hr)]
-kf_EntB  = 3.6e9
-kf_FeChr = 1.7e9
-kf_FeOxA = 7.1e9
-kd_EDTA  = 3.6e-3 # [1/hr]
-kd_EntB  = 5.7e-2
-kd_FeChr = 1.8e-4              # value from Witter et al., 2000
-kd_FeChr_Boiteau = 3.6e-4      # value from Boiteau et al. 2022
-kd_FeOxA = 5.4e-3              # value from Witter et al., 2000
-kd_FeOxA_Boiteau = 1.3e-4      # value from Boiteau et al. 2022
-FeEDTA0  = 100.0e-9
-EntB0 = 50.0e-9
+import McRoseMorel_ISMEcom_solve as McR  
 
-#---------------------------------------------------------------
-# definition of the model equations
-#---------------------------------------------------------------
+# how much ligand are we adding?
 
-# first model, assuming FeEDTA concentration is unchanged, so we solve
-# only for the concentrations of Fe' and Fe bound to the added
-# ligand. 'free' ligand is calculated from mass balance
-def modelEntB(t, Y):
-    Feprime    = Y[0]
-    Fe_ligand  = Y[1]
-    Lig_free = Lig_added - Fe_ligand
-    if Lig_free < 0:
-        Lig_free = 0
-        Fe_ligand = Lig_added
-    dFeprimedt = kd_EDTA * FeEDTA0 - kf_lig * Feprime * Lig_free + kd_lig * Fe_ligand
-    dFeliganddt  = kf_lig * Feprime * Lig_free - kd_lig * Fe_ligand
-    dYdt = [dFeprimedt, dFeliganddt]
-    return dYdt
-
-# second model, taking into account that FeEDTA decreases over time by dissociation
-def model2EntB(t, Y):
-    Feprime    = Y[0]
-    Fe_ligand  = Y[1]
-    FeEDTA     = Y[2]
-    Lig_free = Lig_added - Fe_ligand
-    if Lig_free < 0:
-        Lig_free = 0.0
-        Fe_ligand = Lig_added
-    dFeprimedt = kd_EDTA * FeEDTA - kf_lig * Feprime * Lig_free + kd_lig * Fe_ligand
-    dFeliganddt  = kf_lig * Feprime * Lig_free - kd_lig * Fe_ligand
-    dFeEDTAdt  = -kd_EDTA * FeEDTA
-    dYdt = [dFeprimedt, dFeliganddt, dFeEDTAdt]
-    return dYdt
-
-#---------------------------------------------------------------
-# numerical solution of the model equations over 240 hours (10 days)
-#---------------------------------------------------------------
-if __name__ == "__main__":
-
-    
-    # how much ligand are we adding?
-    
-    question = """
+question = """
 How much of the competing ligand is added?
 (enter the concentration in nmol/L)
 """
     
-    answer = float(input(question))
-    Lig_added = answer * 1.0e-9 
-    print("added ligand amount: ", Lig_added, " mol/L")
+answer = float(input(question))
+McR.Lig_added = answer * 1.0e-9 
+print("added ligand amount: ", McR.Lig_added, " mol/L")
     
-    tspan = [0, 240] # we integrate 10 days = 240 hours
-    # over the first 2 hours we want output every 0.02 hours, after that every hour
-    teval = np.concatenate( (np.arange(tspan[0], 2, 0.02), np.arange(2.0, tspan[1]+1, 1.0)) )
+tspan = [0, 240] # we integrate 10 days = 240 hours
+# over the first 2 hours we want output every 0.02 hours, after that every hour
+teval = np.concatenate( (np.arange(tspan[0], 2, 0.02), np.arange(2.0, tspan[1]+1, 1.0)) )
 
-    # now do two runs: one for constants for Ferrichrome by Witter, one by Boiteau
-    Lig_type = "Ferrichrome (Witter)"
-    kf_lig = kf_FeOxA
-    kd_lig = kd_FeOxA
+# now do two runs: one for constants for Ferrichrome by Witter, one by Boiteau
+Lig_type = "Ferrioxiamine A (Witter)"
+McR.kf_lig = McR.kf_FeOxA
+McR.kd_lig = McR.kd_FeOxA_Witter
     
-    # initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
-    InitCon2 = [0.0, 0.0, FeEDTA0]
-    sol1 = solve_ivp(model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+# initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
+InitCon2 = [0.0, 0.0, McR.FeEDTA0]
+sol1 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
     
-    Lig_type = "Ferrichrome (Boiteau)"
-    kf_lig = kf_FeOxA
-    kd_lig = kd_FeOxA_Boiteau
+Lig_type = "Ferrioxiamine (Boiteau)"
+McR.kf_lig = McR.kf_FeOxA
+McR.kd_lig = McR.kd_FeOxA_Boiteau
     
-    # initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
-    InitCon2 = [0.0, 0.0, FeEDTA0]
-    sol2 = solve_ivp(model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+# initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
+InitCon2 = [0.0, 0.0, McR.FeEDTA0]
+sol2 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
     
-    #---------------------------------------------------------------
-    # make a plot
-    #---------------------------------------------------------------
-    fig,ax = plt.subplots()
-    ax.semilogy(sol1.t, sol1.y[0], label="Fe' (Witter)")
-    ax.semilogy(sol1.t, sol1.y[1], label='FeChr')
-    ax.semilogy(sol2.t, sol2.y[0], '--', label="Fe' (Boiteau)")
-    ax.semilogy(sol2.t, sol2.y[1], '--', label='FeChr')
-    ax.legend()
-    ax.set_xlabel("t [hr]")
-    ax.set_ylabel("Fe species [M]")
-    plt.show()
+#---------------------------------------------------------------
+# make a plot
+#---------------------------------------------------------------
+fig,ax = plt.subplots()
+ax.semilogy(sol1.t, sol1.y[0], label="Fe' (Witter)")
+ax.semilogy(sol1.t, sol1.y[1], label='FeOxA')
+ax.semilogy(sol2.t, sol2.y[0], '--', label="Fe' (Boiteau)")
+ax.semilogy(sol2.t, sol2.y[1], '--', label='FeOxA')
+ax.legend()
+ax.set_xlabel("t [hr]")
+ax.set_ylabel("Fe species [M]")
+ax.grid()
+plt.show()
 

@@ -18,7 +18,7 @@ kd_FeChr_Witter = 1.8e-4       # value from Witter et al., 2000
 kd_FeChr_Boiteau = 3.6e-4      # value from Boiteau et al. 2022
 kd_FeOxA_Witter = 5.4e-3       # value from Witter et al., 2000
 kd_FeOxA_Boiteau = 1.3e-4      # value from Boiteau et al. 2022
-kdeg_Ent = 1.0/(3.0 * 24) # [1/hr]
+kdeg_Ent = 1.0/(3.0 * 24)      # [1/hr]
 FeEDTA0  = 100.0e-9
 EntB0 = 50.0e-9
 
@@ -61,7 +61,7 @@ def model2EntB(t, Y):
     return dYdt
 
 # third model, taking into additionally that the added ligand may be unstable with
-# the apo form being degraded with a constant rate 
+# the apo form (Lig_free) being degraded with a constant rate 
 def model3EntB(t, Y):
     Feprime    = Y[0]
     Fe_ligand  = Y[1]
@@ -113,7 +113,8 @@ Which ligand is added? (Enter an integer number between 1 and 5)
         print("did not recognise input")
     print("Using formation and dissociation constants for " + Lig_type)
 
-    # do we want to include apo-enterobactin degradation in the solution 
+    # do we want to include apo-enterobactin degradation in the solution?
+    
     if (Lig_type=="Enterobactin"):
         question = """
 Do we include degradation of apo-enterobactin in the calculation?
@@ -122,6 +123,8 @@ Do we include degradation of apo-enterobactin in the calculation?
         answer_decay = int(input(question))
         if (answer_decay == 1):
             kdeg_lig = kdeg_Ent
+            print("Added ligand is decaying in its apo form")
+            print("degradation rate is ",kdeg_lig," 1/h")
         
     # how much ligand are we adding?
     
@@ -157,10 +160,12 @@ How much of the competing ligand is added?
     fig,ax = plt.subplots()
     ax.semilogy(sol2.t, sol2.y[0], '-', label="Fe' (3 eqns, no ligand decay)")
     ax.semilogy(sol2.t, sol2.y[1], '-', label='FeEntB')
-    ax.semilogy(sol3.t, sol3.y[0], '--', label="Fe' (4 eqns, ligand decauy)")
-    ax.semilogy(sol3.t, sol3.y[1], '--', label='FeEntB')
+    if (answer_decay == 1):
+        ax.semilogy(sol3.t, sol3.y[0], '--', label="Fe' (4 eqns, with ligand decay)")
+        ax.semilogy(sol3.t, sol3.y[1], '--', label='FeEntB')
     ax.legend()
     ax.set_xlabel("t [hr]")
     ax.set_ylabel("Fe species [M]")
+    ax.grid()
     plt.show()
 

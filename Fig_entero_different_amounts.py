@@ -10,49 +10,45 @@ import matplotlib.pyplot as plt
 #---------------------------------------------------------------
 import McRoseMorel_ISMEcom_solve as McR  
 
-# how much ligand are we adding?
+# which ligand we are using
+Lig_type = "Enterobactin"
+McR.kf_lig = McR.kf_EntB
+McR.kd_lig = McR.kd_EntB
 
-question = """
-How much of the competing ligand is added?
-(enter the concentration in nmol/L)
-"""
-    
-answer = float(input(question))
-McR.Lig_added = answer * 1.0e-9 
-print("added ligand amount: ", McR.Lig_added, " mol/L")
-    
+# now do three model integrations, with three different amounts of
+# added ligand
+
 tspan = [0, 240] # we integrate 10 days = 240 hours
 # over the first 2 hours we want output every 0.02 hours, after that every hour
 teval = np.concatenate( (np.arange(tspan[0], 2, 0.02), np.arange(2.0, tspan[1]+1, 1.0)) )
 
-# now do two runs: one for constants for Ferrichrome by Witter, one by Boiteau
-Lig_type = "Ferrichrome (Witter)"
-McR.kf_lig = McR.kf_FeChr
-McR.kd_lig = McR.kd_FeChr_Witter
-    
-# initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
+# first with 25 nM added Enterobactin
+McR.Lig_added = 25.0e-9 
 InitCon2 = [0.0, 0.0, McR.FeEDTA0]
 sol1 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
-    
-Lig_type = "Ferrichrome (Boiteau)"
-McR.kf_lig = McR.kf_FeChr
-McR.kd_lig = McR.kd_FeChr_Boiteau
-    
-# initial condition: Fe' and Fe bound to ligand added = 0, FeEDTA = 100 nM
+
+# then with 50 nM added Enterobactin
+McR.Lig_added = 50.0e-9 
 InitCon2 = [0.0, 0.0, McR.FeEDTA0]
 sol2 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
-    
+
+# finally with 100 nM added Enterobactin
+McR.Lig_added = 100.0e-9 
+InitCon2 = [0.0, 0.0, McR.FeEDTA0]
+sol3 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+
 #---------------------------------------------------------------
 # make a plot
 #---------------------------------------------------------------
 fig,ax = plt.subplots()
-ax.semilogy(sol1.t, sol1.y[0], label="Fe' (Witter)")
-ax.semilogy(sol1.t, sol1.y[1], label='FeChr')
-ax.semilogy(sol2.t, sol2.y[0], '--', label="Fe' (Boiteau)")
-ax.semilogy(sol2.t, sol2.y[1], '--', label='FeChr')
+ax.semilogy(sol1.t, sol1.y[0], label="Fe' with 25 nM EntB")
+ax.semilogy(sol1.t, sol1.y[1], label='FeEntB')
+ax.semilogy(sol2.t, sol2.y[0], '--', label="Fe' with 50 nM EntB")
+ax.semilogy(sol2.t, sol2.y[1], '--', label='FeEntB')
+ax.semilogy(sol3.t, sol3.y[0], '-.', label="Fe' with 100 nM EntB")
+ax.semilogy(sol3.t, sol3.y[1], '-.', label='FeEntB')
 ax.legend()
 ax.set_xlabel("t [hr]")
 ax.set_ylabel("Fe species [M]")
 ax.grid()
 plt.show()
-
