@@ -23,6 +23,18 @@ FeEDTA0  = 100.0e-9
 EntB0 = 50.0e-9
 
 #---------------------------------------------------------------
+# default: no abiotic degradation of added ligand
+#---------------------------------------------------------------
+kdeg_lig = 0
+
+#---------------------------------------------------------------
+# bacterial growth and iron uptake constants
+#---------------------------------------------------------------
+mu_bac = 0.5/24    # bacterial growth rate [1/hr]
+kfe_bac = 1.0e-12  # bacterial grwoth half saturation constant for iron [mol Fe/L]
+qFe_cell = 2.4e-21 # bacterial Fe uptake rate at maximum growth [mol Fe/cell/hr]
+
+#---------------------------------------------------------------
 # definition of the model equations
 #---------------------------------------------------------------
 
@@ -72,6 +84,22 @@ def model3EntB(t, Y):
     dFeEDTAdt   = -kd_EDTA * FeEDTA
     dLigfreedt = kd_lig * Fe_ligand - kf_lig * Feprime * Lig_free - kdeg_lig * Lig_free
     dYdt = [dFeprimedt, dFeliganddt, dFeEDTAdt, dLigfreedt]
+    return dYdt
+
+# fourth model, taking into account additionally iron uptake by the bacterial cells 
+def model4EntB(t, Y):
+    Feprime    = Y[0]
+    Fe_ligand  = Y[1]
+    FeEDTA     = Y[2]
+    Lig_free   = Y[3]
+    Bacteria   = Y[4]
+    dFeprimedt  = ( kd_EDTA * FeEDTA - kf_lig * Feprime * Lig_free + kd_lig * Fe_ligand - 
+                  qFe_cell * Bacteria * Feprime / (kfe_bac + Feprime) )
+    dFeliganddt = kf_lig * Feprime * Lig_free - kd_lig * Fe_ligand
+    dFeEDTAdt   = -kd_EDTA * FeEDTA
+    dLigfreedt = kd_lig * Fe_ligand - kf_lig * Feprime * Lig_free - kdeg_lig * Lig_free
+    dBacdt     = mu_bac * Bacteria * Feprime / (kfe_bac + Feprime)
+    dYdt = [dFeprimedt, dFeliganddt, dFeEDTAdt, dLigfreedt, dBacdt]
     return dYdt
 
 #---------------------------------------------------------------
