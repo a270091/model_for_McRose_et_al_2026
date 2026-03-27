@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import McRoseMorel_ISMEcom_solve as McR  
 
 # which ligand we are using
-Lig_type = "Ferrichrome"
-McR.kf_lig = McR.kf_FeChr
-McR.kd_lig = McR.kd_FeChr_Boiteau
+Lig_type = "Ferrioxiamine"
+McR.kf_lig = McR.kf_FeOxA
+McR.kd_lig = McR.kd_FeOxA_Boiteau
 
 # now do three model integrations, with three different amounts of
 # added ligand
@@ -59,11 +59,10 @@ contour_y = np.append( BFe, np.ones(np.shape(teval))*ylimits[0])
 ax.fill(contour_x, contour_y, color='r', alpha=0.3)
 # ax.semilogy(teval, BFe, 'r-', label="cumulative Fe uptake")
 ax.legend(loc='upper left')
-ax.set_xlabel("time (days)", fontsize=12)
-ax.set_ylabel("Fe' (M)", fontsize=12)
-ax.set_yticks((), minor= True)
-ax.tick_params(axis='both', which='major', labelsize=12)
+ax.set_xlabel("time (days)")
+ax.set_ylabel("Fe' (M)")
+# ax.grid()
 plt.ylim(ylimits)
 plt.title(Lig_type,loc='left')
-plt.savefig("uptake_ferrichrome.pdf")
+plt.savefig("uptake_ferrioxiamine.pdf")
 plt.show()

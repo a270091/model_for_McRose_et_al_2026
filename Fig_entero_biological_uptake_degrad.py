@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 import McRoseMorel_ISMEcom_solve as McR  
 
 # which ligand we are using
-Lig_type = "Ferrichrome"
-McR.kf_lig = McR.kf_FeChr
-McR.kd_lig = McR.kd_FeChr_Boiteau
+Lig_type = "Enterobactin with degradation"
+McR.kf_lig = McR.kf_EntB
+McR.kd_lig = McR.kd_EntB
+McR.kdeg_lig = 1.0/(1.73*24)
 
 # now do three model integrations, with three different amounts of
 # added ligand
@@ -24,18 +25,23 @@ teval = np.concatenate( (np.arange(tspan[0], 2, 0.02), np.arange(2.0, tspan[1]+1
 
 # first with 25 nM added Enterobactin
 McR.Lig_added = 25.0e-9 
-InitCon2 = [0.0, 0.0, McR.FeEDTA0]
-sol1 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+InitCon2 = [0.0, 0.0, McR.FeEDTA0, McR.Lig_added]
+sol1 = solve_ivp(McR.model3EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
 
 # then with 50 nM added Enterobactin
 McR.Lig_added = 50.0e-9 
-InitCon2 = [0.0, 0.0, McR.FeEDTA0]
-sol2 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+InitCon2 = [0.0, 0.0, McR.FeEDTA0, McR.Lig_added]
+sol2 = solve_ivp(McR.model3EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
 
 # finally with 100 nM added Enterobactin
 McR.Lig_added = 100.0e-9 
-InitCon2 = [0.0, 0.0, McR.FeEDTA0]
-sol3 = solve_ivp(McR.model2EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+InitCon2 = [0.0, 0.0, McR.FeEDTA0, McR.Lig_added]
+sol3 = solve_ivp(McR.model3EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
+
+# finally with 1 microM added Enterobactin
+McR.Lig_added = 1000.0e-9 
+InitCon2 = [0.0, 0.0, McR.FeEDTA0, McR.Lig_added]
+sol4 = solve_ivp(McR.model3EntB, tspan, InitCon2, method='BDF', rtol=1.0e-12, atol=1.0e-20, t_eval=teval)
 
 #---------------------------------------------------------------
 # calculate cumulative biological Fe uptake
@@ -52,18 +58,17 @@ fig,ax = plt.subplots()
 ax.semilogy(sol1.t/24, sol1.y[0], 'k-.', label="25 nM")
 ax.semilogy(sol2.t/24, sol2.y[0], 'k--', label="50 nM")
 ax.semilogy(sol3.t/24, sol3.y[0], 'k-', label="100 nM")
+ax.semilogy(sol4.t/24, sol4.y[0], 'k-', linewidth=2, label="1 $\\mu$M")
 xlimits = plt.xlim()
 ylimits = plt.ylim()
-contour_x = np.append( teval, np.flip(teval)) / 24
+contour_x = np.append( teval, np.flip(teval)) / 24.0
 contour_y = np.append( BFe, np.ones(np.shape(teval))*ylimits[0])
 ax.fill(contour_x, contour_y, color='r', alpha=0.3)
-# ax.semilogy(teval, BFe, 'r-', label="cumulative Fe uptake")
+#ax.semilogy(teval, BFe, 'r-', label="cumulative Fe uptake")
 ax.legend(loc='upper left')
-ax.set_xlabel("time (days)", fontsize=12)
-ax.set_ylabel("Fe' (M)", fontsize=12)
-ax.set_yticks((), minor= True)
-ax.tick_params(axis='both', which='major', labelsize=12)
+ax.set_xlabel("time (days)")
+ax.set_ylabel("Fe' (M)")
 plt.ylim(ylimits)
 plt.title(Lig_type,loc='left')
-plt.savefig("uptake_ferrichrome.pdf")
+plt.savefig("uptake_enterobactin_degrade.pdf")
 plt.show()

@@ -1,10 +1,12 @@
 ## Code accompanying the manuscript by McRose et al., submitted to ISME Communications in 2025
 
-# Requirements for running the model 
+### Requirements for running the model 
 
 The code is pure python and should run with any version of Python
 3.X. It makes use of the following Python packages: SciPy, NumPy, and
 matplotlib, so those should be installed.
+
+### What the different files are 
 
 The main code, containg the settings of all reaction rates for the
 different Fe-binding ligands, and the definition of the model
@@ -17,13 +19,6 @@ or (depending on your Python installation) by just clicking on the
 file in some graphical user interface. This will lead you through a
 few questions and produce one model output plot.
 
-If you want to play around with the model in a more free way, you can
-use the model code as a module and write your own calls to the
-models. An example for that is done in
-'Fig_different_rates_FerrioxiamineB.py' which produces a plot that
-compares how the different ligand reaction rates for FerrioxiamineB
-from Witter et al, and from Boiteau et al. affect the model outcome.
-
 The code contained in `McRoseMorel_ISMEcom_solve.py` actually contains
 four different kinetic models of increasing complexity: 
 
@@ -34,3 +29,14 @@ four different kinetic models of increasing complexity:
 - The third (function 'model2EntB') extends the second by adding one more equation for the concentration of free ligand, equation (3) from  the manuscript. Adding this equation allows to also describe a degradation of the app form of the added siderophore with time.
 
 - And finally, the fourth adds a description of biological uptake  of Fe' by solving a fifth equation describing the change of bacterial cell numbers.
+
+### Applications of the model
+
+The other python files are different applications of the model, which all use `McRoseMorel_ISMEcom_solve.py`. Amongst them are the files that produced the four subplots of Fig. 4 in McRose et al. These sre the files called `Fig_entero_biological_uptake.py`, `Fig_entero_biological_uptake_degrad.py`, `Fig_ferrichrome_biological_uptake.py`, and `Fig_ferrioxiamine_biological_uptake.py`. 
+
+If you want to play around with the model in a more free way, you can
+use one of these application files as example and modify it. An example for that is done in
+'Fig_different_rates_FerrioxiamineB.py' which produces a plot that
+compares how the different ligand reaction rates for FerrioxiamineB
+from Witter et al, and from Boiteau et al. affect the model outcome.
+
