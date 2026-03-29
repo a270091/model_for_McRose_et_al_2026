@@ -53,7 +53,7 @@ ax.semilogy(sol1.t/24, sol1.y[0], 'k-.', label="25 nM")
 ax.semilogy(sol2.t/24, sol2.y[0], 'k--', label="50 nM")
 ax.semilogy(sol3.t/24, sol3.y[0], 'k-', label="100 nM")
 xlimits = plt.xlim()
-ylimits = plt.ylim()
+ylimits = plt.ylim(1.0e-13, 2.0e-7)
 contour_x = np.append( teval, np.flip(teval)) / 24
 contour_y = np.append( BFe, np.ones(np.shape(teval))*ylimits[0])
 ax.fill(contour_x, contour_y, color='r', alpha=0.3)

@@ -22,13 +22,27 @@ few questions and produce one model output plot.
 The code contained in `McRoseMorel_ISMEcom_solve.py` actually contains
 four different kinetic models of increasing complexity: 
 
-- The first of these (coded in function 'modelEntB') is for just solving differential equations (1) and (2) for Fe' and for FeY from the manuscript, assuming that the concentration of FeEDTA is constant, and that the concentration of free siderophore Y can be calculated from added siderophore minus FeY. 
+- The first of these (coded in function 'modelEntB') is for just
+  solving differential equations (1) and (2) for Fe' and for FeY from
+  the manuscript, assuming that the concentration of FeEDTA is
+  constant, and that the concentration of free siderophore Y can be
+  calculated from added siderophore minus FeY.
 
-- The second (function 'model2EntB') solves the same equation, but adds one more equation describing the decrease of FeEDTA with time, equation (4) in the manuscript.
+- The second (function 'model2EntB') solves the same equation, but
+  adds one more equation describing the decrease of FeEDTA with time,
+  equation (4) in the manuscript.
 
-- The third (function 'model2EntB') extends the second by adding one more equation for the concentration of free ligand, equation (3) from  the manuscript. Adding this equation allows to also describe a degradation of the app form of the added siderophore with time.
+- The third (function 'model2EntB') extends the second by adding one
+  more equation for the concentration of free ligand, equation (3)
+  from the manuscript. Adding this equation allows to also describe a
+  degradation of the app form of the added siderophore with time.
 
-- And finally, the fourth adds a description of biological uptake  of Fe' by solving a fifth equation describing the change of bacterial cell numbers.
+- And finally, the fourth adds a description of biological uptake of
+  Fe' by solving a fifth equation describing the change of bacterial
+  cell numbers. This model uses a Michaelis-Menten-like downregulation
+  of grwoth and Fe uptake under Fe limitation. Since we have no data
+  on the coresponding half-satiration constant this model was not used
+  in the manuscript.
 
 ### Applications of the model
 
