@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "McRose"
+  given-names: "Darcy"
+  orcid: "https://orcid.org/0000-0001-9637-7176"
+- family-names: "Völker"
+  given-names: "Christoph"
+  orcid: "https://orcid.org/0000-0003-3032-114X"
+- family-names: "Morel"
+  given-names: "Francois"
+  orcid: "https://orcid.org/0000-0002-6311-7826"
+title: "Associated python code to McRose et al. manuscript submitted to ISME Communications in 2025"
+version: 1.0.2
+doi: 10.5281/zenodo.19264293 
+date-released: 2026-03-29
+url: "https://github.com/a270091/model_for_McRose_et_al_2026"
