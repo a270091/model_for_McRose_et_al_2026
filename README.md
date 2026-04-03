@@ -32,21 +32,21 @@ four different kinetic models of increasing complexity:
   adds one more equation describing the decrease of FeEDTA with time,
   equation (4) in the manuscript.
 
-- The third (function 'model2EntB') extends the second by adding one
+- The third (function 'model3EntB') extends the second by adding one
   more equation for the concentration of free ligand, equation (3)
   from the manuscript. Adding this equation allows to also describe a
   degradation of the app form of the added siderophore with time.
 
-- And finally, the fourth adds a description of biological uptake of
+- And finally, the fourth (function 'model4EntB') adds a description of biological uptake of
   Fe' by solving a fifth equation describing the change of bacterial
   cell numbers. This model uses a Michaelis-Menten-like downregulation
-  of grwoth and Fe uptake under Fe limitation. Since we have no data
-  on the coresponding half-satiration constant this model was not used
+  of growth and Fe uptake under Fe limitation. Since we have no data
+  on the coresponding half-saturation constant this model was not used
   in the manuscript.
 
 ### Applications of the model
 
-The other python files are different applications of the model, which all use `McRoseMorel_ISMEcom_solve.py`. Amongst them are the files that produced the four subplots of Fig. 4 in McRose et al. These sre the files called `Fig_entero_biological_uptake.py`, `Fig_entero_biological_uptake_degrad.py`, `Fig_ferrichrome_biological_uptake.py`, and `Fig_ferrioxiamine_biological_uptake.py`. 
+The other python files are different applications of the model, which all use `McRoseMorel_ISMEcom_solve.py`. Amongst them are the files that produced the four subplots of Fig. 4 in McRose et al. These are the files called `Fig_entero_biological_uptake.py`, `Fig_entero_biological_uptake_degrad.py`, `Fig_ferrichrome_biological_uptake.py`, and `Fig_ferrioxiamine_biological_uptake.py`. 
 
 If you want to play around with the model in a more free way, you can
 use one of these application files as example and modify it. An example for that is done in
